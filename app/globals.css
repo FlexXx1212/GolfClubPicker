@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    overscroll-behavior: none;
+    /* Dot grid atmosphere */
+    background-image: radial-gradient(circle, rgba(255, 253, 217, 0.045) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  input[type='range'] {
+    @apply accent-brand-neon;
+  }
+
+  /* Remove iOS input styling */
+  input, select, textarea {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes barGrow {
+  from { width: 0; }
+}
+
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 12px 0px rgba(225, 255, 0, 0.25); }
+  50%       { box-shadow: 0 0 24px 4px rgba(225, 255, 0, 0.15); }
+}
+
+.animate-slide-up {
+  animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-bar {
+  animation: barGrow 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-neon-pulse {
+  animation: neonPulse 2.5s ease-in-out infinite;
+}
+
+/* Staggered children */
+.stagger-children > * { animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stagger-children > *:nth-child(1)  { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2)  { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3)  { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4)  { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5)  { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6)  { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7)  { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8)  { animation-delay: 350ms; }
+.stagger-children > *:nth-child(9)  { animation-delay: 400ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 450ms; }
+.stagger-children > *:nth-child(n+11) { animation-delay: 500ms; }
+
+/* ─── Components ─────────────────────────────────────────────────────────── */
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-neon text-brand-black font-bold rounded-xl px-6 py-3
+           transition-all duration-150 active:scale-[0.97] hover:brightness-110
+           focus:outline-none focus:ring-2 focus:ring-brand-neon/50
+           shadow-[0_0_20px_rgba(225,255,0,0.2)];
+  }
+
+  .btn-secondary {
+    @apply bg-brand-dark text-brand-cream font-semibold rounded-xl px-6 py-3
+           transition-all duration-150 active:scale-[0.97] hover:bg-brand-muted/20
+           border border-brand-muted/20
+           focus:outline-none focus:ring-2 focus:ring-brand-neon/20;
+  }
+
+  .btn-ghost {
+    @apply text-brand-muted font-medium rounded-xl px-4 py-2
+           transition-all duration-150 active:scale-95 hover:text-brand-cream
+           focus:outline-none;
+  }
+
+  .card {
+    @apply bg-brand-dark/40 border border-brand-muted/10 rounded-2xl p-4
+           backdrop-blur-sm;
+  }
+
+  .pill-active {
+    @apply bg-brand-neon text-brand-black font-bold rounded-xl px-4 py-2 text-sm
+           transition-all duration-150;
+  }
+
+  .pill-inactive {
+    @apply bg-brand-dark/60 text-brand-muted font-semibold rounded-xl px-4 py-2 text-sm
+           border border-brand-muted/20 transition-all duration-150 hover:border-brand-muted/40;
+  }
+
+  /* Section label */
+  .section-label {
+    @apply text-[10px] font-bold text-brand-muted uppercase tracking-[0.15em];
+  }
+}
+
