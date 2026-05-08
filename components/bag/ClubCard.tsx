@@ -1,19 +1,16 @@
-'use client';
-
 import { Club } from '@/lib/types';
 import { CATEGORY_ICONS } from '@/lib/defaults';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
-import { Pencil, Trash2, Activity } from 'lucide-react';
+import { Pencil, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props {
   club: Club;
   onEdit: () => void;
-  onDelete: () => void;
 }
 
-export default function ClubCard({ club, onEdit, onDelete }: Props) {
+export default function ClubCard({ club, onEdit }: Props) {
   const effective = getEffectiveTotal(club);
   const icon = CATEGORY_ICONS[club.category] ?? '⛳';
 
@@ -56,13 +53,6 @@ export default function ClubCard({ club, onEdit, onDelete }: Props) {
           aria-label={`Edit ${club.name}`}
         >
           <Pencil size={15} />
-        </button>
-        <button
-          onClick={onDelete}
-          className="p-2 rounded-lg text-brand-muted hover:text-red-400 hover:bg-red-400/10 transition-colors"
-          aria-label={`Delete ${club.name}`}
-        >
-          <Trash2 size={15} />
         </button>
       </div>
     </div>

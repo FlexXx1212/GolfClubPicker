@@ -4,19 +4,21 @@ import { useState } from 'react';
 import { Club, ClubCategory } from '@/lib/types';
 import { getMinRollout } from '@/lib/rollout';
 import ClubTypeSelector from './ClubTypeSelector';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 
 interface Props {
   initial?: Club;
   onSave:   (data: Omit<Club, 'id'>) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
-export default function ClubForm({ initial, onSave, onCancel }: Props) {
+export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props) {
   const [category, setCategory] = useState<ClubCategory>(initial?.category ?? 'iron');
   const [name,     setName]     = useState(initial?.name ?? '');
   const [carry,    setCarry]    = useState(initial?.carry ?? 150);
   const [totalCustom, setTotalCustom] = useState<number | null>(initial?.total ?? null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   function getDefaultTotal(c: number, cat: ClubCategory): number {
     return c + getMinRollout({ id: '', name: '', category: cat, carry: c });
@@ -153,6 +155,46 @@ export default function ClubForm({ initial, onSave, onCancel }: Props) {
             {totalCustom !== null ? 'Custom value' : 'Auto-calculated from carry + min. rollout'}
           </p>
         </div>
+
+        {/* Delete (only in edit mode) */}
+        {initial && onDelete && !showDeleteConfirm && (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl
+                       text-red-400/70 hover:text-red-400 hover:bg-red-400/5
+                       border border-red-400/15 transition-colors text-sm font-medium"
+          >
+            <Trash2 size={14} />
+            Delete Club
+          </button>
+        )}
+
+        {/* Delete confirmation */}
+        {showDeleteConfirm && onDelete && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 space-y-3">
+            <p className="text-red-400 text-sm font-bold">
+              Delete &quot;{initial?.name}&quot;?
+            </p>
+            <p className="text-brand-muted text-xs">
+              This action cannot be undone. All tracking data for this club will remain but the club will be removed from your bag.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn-secondary flex-1 !py-2 text-sm"
+              >
+                Keep
+              </button>
+              <button
+                onClick={onDelete}
+                className="flex-1 bg-red-500 text-white font-bold rounded-xl px-4 py-2 text-sm
+                           transition-all duration-150 active:scale-[0.97] hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-3 pt-1">

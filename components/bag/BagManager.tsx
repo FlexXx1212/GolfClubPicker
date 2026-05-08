@@ -65,7 +65,6 @@ export default function BagManager() {
                     key={club.id}
                     club={club}
                     onEdit={() => setEditingClub(club)}
-                    onDelete={() => removeClub(club.id)}
                   />
                 ))}
               </div>
@@ -94,6 +93,10 @@ export default function BagManager() {
             setEditingClub(null);
           }}
           onCancel={() => setEditingClub(null)}
+          onDelete={() => {
+            removeClub(editingClub.id);
+            setEditingClub(null);
+          }}
         />
       )}
     </div>
