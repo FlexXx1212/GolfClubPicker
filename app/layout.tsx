@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <TrackingProvider>
               <AuthGate>
                 <div className="flex flex-col min-h-screen max-w-md mx-auto relative">
-                  <main className="flex-1 pb-20 overflow-y-auto">
+                  <main className="flex-1 pb-20">
                     {children}
                   </main>
                   <BottomNav />

@@ -94,7 +94,7 @@ export default function TrackingPage() {
         </button>
 
         {showSelector && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-brand-dark border border-brand-muted/20 rounded-xl overflow-hidden z-30 max-h-60 overflow-y-auto shadow-2xl">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-brand-dark border border-brand-muted/20 rounded-xl overflow-hidden z-40 max-h-60 overflow-y-auto shadow-2xl">
             {bag.clubs
               .sort((a, b) => b.carry - a.carry)
               .map((club) => (
