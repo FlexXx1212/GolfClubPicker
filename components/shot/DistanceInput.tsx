@@ -10,25 +10,47 @@ interface Props {
 export default function DistanceInput({ value, onChange, min = 0, max = 300 }: Props) {
   return (
     <div className="space-y-4">
-      {/* Hero distance display */}
-      <div className="flex items-end gap-3">
-        <input
-          type="number"
-          value={value}
-          min={min}
-          max={max}
-          onChange={(e) => {
-            const v = Math.max(min, Math.min(max, Number(e.target.value)));
-            onChange(v);
-          }}
-          className="w-36 bg-transparent text-[72px] leading-none font-display
-                     text-brand-neon border-b-2 border-brand-neon/30
-                     focus:border-brand-neon outline-none text-center
-                     transition-colors tracking-wide pb-1"
-        />
-        <span className="text-brand-muted text-2xl pb-3 font-bold tracking-widest uppercase">
-          m
-        </span>
+      {/* Hero distance display with ±1 buttons */}
+      <div className="flex items-center justify-center gap-3">
+        <button
+          onClick={() => onChange(Math.max(min, value - 1))}
+          className="w-12 h-12 rounded-xl bg-brand-dark/60 border border-brand-muted/15
+                     text-brand-muted text-2xl font-bold
+                     hover:text-brand-neon hover:border-brand-neon/30
+                     active:scale-90 transition-all flex items-center justify-center"
+          aria-label="Decrease distance"
+        >
+          −
+        </button>
+        <div className="flex items-end gap-1">
+          <input
+            type="number"
+            value={value}
+            min={min}
+            max={max}
+            onChange={(e) => {
+              const v = Math.max(min, Math.min(max, Number(e.target.value)));
+              onChange(v);
+            }}
+            className="w-36 bg-transparent text-[72px] leading-none font-display
+                       text-brand-neon border-b-2 border-brand-neon/30
+                       focus:border-brand-neon outline-none text-center
+                       transition-colors tracking-wide pb-1"
+          />
+          <span className="text-brand-muted text-2xl pb-3 font-bold tracking-widest uppercase">
+            m
+          </span>
+        </div>
+        <button
+          onClick={() => onChange(Math.min(max, value + 1))}
+          className="w-12 h-12 rounded-xl bg-brand-dark/60 border border-brand-muted/15
+                     text-brand-muted text-2xl font-bold
+                     hover:text-brand-neon hover:border-brand-neon/30
+                     active:scale-90 transition-all flex items-center justify-center"
+          aria-label="Increase distance"
+        >
+          +
+        </button>
       </div>
 
       {/* Slider with neon fill */}
