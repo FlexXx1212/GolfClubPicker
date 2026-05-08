@@ -35,3 +35,18 @@ export interface Recommendation {
   adjustedTarget: number;
   explanation: string[];
 }
+
+// ─── Shot Tracking ──────────────────────────────────────────────────────────
+
+export interface TrackedShot {
+  id: string;
+  carry: number;
+  total: number;
+  timestamp: number;
+}
+
+export interface TrackingSession {
+  date: string;           // "YYYY-MM-DD" — one session per day
+  clubId: string;
+  shots: TrackedShot[];
+}
