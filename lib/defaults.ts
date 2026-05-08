@@ -39,7 +39,7 @@ export const CATEGORY_ORDER: ClubCategory[] = ['driver', 'wood', 'hybrid', 'iron
 
 export const CATEGORY_ICONS: Record<ClubCategory, string> = {
   driver: '🏌️',
-  wood:   '🪵',
+  wood:   '🌳',
   hybrid: '⚡',
   iron:   '🔩',
   wedge:  '🥏',
