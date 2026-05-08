@@ -30,7 +30,9 @@ export function getMinRollout(club: Club): number {
 
 /**
  * Returns carry + minimal rollout as the effective total distance.
+ * Uses custom total if the user has set one.
  */
 export function getEffectiveTotal(club: Club): number {
+  if (club.total != null) return club.total;
   return club.carry + getMinRollout(club);
 }

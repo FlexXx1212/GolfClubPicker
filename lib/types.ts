@@ -9,6 +9,7 @@ export interface Club {
   name: string;          // e.g. "7 Iron", "52° GW", "Driver"
   category: ClubCategory;
   carry: number;         // carry distance in meters
+  total?: number;        // custom total distance (carry + rollout); auto-calculated if not set
 }
 
 export interface Bag {

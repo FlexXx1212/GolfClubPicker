@@ -9,7 +9,7 @@ import Link from 'next/link';
 
 const CATEGORY_ICONS: Record<string, string> = {
   driver: '🏌️',
-  wood:   '🪵',
+  wood:   '🪓',
   hybrid: '⚡',
   iron:   '🔩',
   wedge:  '🥏',
