@@ -1,18 +1,11 @@
 'use client';
 
 import { Club } from '@/lib/types';
+import { CATEGORY_ICONS } from '@/lib/defaults';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
 import { Pencil, Trash2, Activity } from 'lucide-react';
 import Link from 'next/link';
-
-const CATEGORY_ICONS: Record<string, string> = {
-  driver: '🏌️',
-  wood:   '🪵',
-  hybrid: '⚡',
-  iron:   '🔩',
-  wedge:  '🥏',
-};
 
 interface Props {
   club: Club;

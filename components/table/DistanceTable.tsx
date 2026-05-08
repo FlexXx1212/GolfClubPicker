@@ -2,18 +2,11 @@
 
 import { useBag } from '@/lib/storage';
 import { buildRanges } from '@/lib/ranges';
+import { CATEGORY_ICONS } from '@/lib/defaults';
 import { cn } from '@/lib/utils';
 import EmptyState from '@/components/common/EmptyState';
 import { Table2 } from 'lucide-react';
 import Link from 'next/link';
-
-const CATEGORY_ICONS: Record<string, string> = {
-  driver: '🏌️',
-  wood:   '🪓',
-  hybrid: '⚡',
-  iron:   '🔩',
-  wedge:  '🥏',
-};
 
 export default function DistanceTable() {
   const { bag } = useBag();

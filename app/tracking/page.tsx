@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { useBag } from '@/lib/storage';
 import { useTracking } from '@/lib/tracking-storage';
@@ -18,6 +19,7 @@ export default function TrackingPage() {
   const [carry, setCarry] = useState(150);
   const [total, setTotal] = useState(160);
   const [showSelector, setShowSelector] = useState(false);
+  const selectorBtnRef = useRef<HTMLButtonElement>(null);
 
   // Initialize from URL param or first club
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function TrackingPage() {
       {/* Club Selector */}
       <div className="relative animate-slide-up">
         <button
+          ref={selectorBtnRef}
           onClick={() => setShowSelector(!showSelector)}
           className="w-full flex items-center justify-between bg-brand-dark border border-brand-muted/20 rounded-xl px-4 py-3 text-left"
         >
@@ -93,28 +96,45 @@ export default function TrackingPage() {
           )} />
         </button>
 
-        {showSelector && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-brand-dark border border-brand-muted/20 rounded-xl overflow-hidden z-40 max-h-60 overflow-y-auto shadow-2xl">
-            {bag.clubs
-              .sort((a, b) => b.carry - a.carry)
-              .map((club) => (
-                <button
-                  key={club.id}
-                  onClick={() => {
-                    setSelectedClubId(club.id);
-                    setShowSelector(false);
-                  }}
-                  className={cn(
-                    'w-full text-left px-4 py-2.5 text-sm transition-colors',
-                    club.id === selectedClubId
-                      ? 'bg-brand-neon/10 text-brand-neon font-bold'
-                      : 'text-brand-cream hover:bg-brand-muted/10'
-                  )}
-                >
-                  {club.name} <span className="text-brand-muted text-xs ml-1">{club.carry}m</span>
-                </button>
-              ))}
-          </div>
+        {showSelector && createPortal(
+          <>
+            <div className="fixed inset-0 z-[199]" onClick={() => setShowSelector(false)} />
+            <div
+              className="fixed z-[200] bg-brand-dark border border-brand-muted/20 rounded-xl overflow-hidden max-h-60 overflow-y-auto shadow-2xl"
+              style={{
+                top: selectorBtnRef.current
+                  ? selectorBtnRef.current.getBoundingClientRect().bottom + 4
+                  : 0,
+                left: selectorBtnRef.current
+                  ? selectorBtnRef.current.getBoundingClientRect().left
+                  : 0,
+                width: selectorBtnRef.current
+                  ? selectorBtnRef.current.getBoundingClientRect().width
+                  : '100%',
+              }}
+            >
+              {bag.clubs
+                .sort((a, b) => b.carry - a.carry)
+                .map((club) => (
+                  <button
+                    key={club.id}
+                    onClick={() => {
+                      setSelectedClubId(club.id);
+                      setShowSelector(false);
+                    }}
+                    className={cn(
+                      'w-full text-left px-4 py-2.5 text-sm transition-colors',
+                      club.id === selectedClubId
+                        ? 'bg-brand-neon/10 text-brand-neon font-bold'
+                        : 'text-brand-cream hover:bg-brand-muted/10'
+                    )}
+                  >
+                    {club.name} <span className="text-brand-muted text-xs ml-1">{club.carry}m</span>
+                  </button>
+                ))}
+            </div>
+          </>,
+          document.body
         )}
       </div>
 

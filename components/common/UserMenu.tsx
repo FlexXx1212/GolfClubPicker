@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/lib/auth';
 import { LogOut, User, ChevronDown, Cloud, CloudOff } from 'lucide-react';
 import Image from 'next/image';
@@ -12,12 +13,16 @@ interface Props {
 export default function UserMenu({ syncing }: Props) {
   const { user, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   if (!user) return null;
+
+  const rect = btnRef.current?.getBoundingClientRect();
 
   return (
     <div className="relative">
       <button
+        ref={btnRef}
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl
                    bg-brand-dark/50 border border-brand-muted/15
@@ -46,14 +51,18 @@ export default function UserMenu({ syncing }: Props) {
         <ChevronDown size={12} />
       </button>
 
-      {open && (
+      {open && createPortal(
         <>
           {/* Backdrop */}
           <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />
           {/* Menu */}
-          <div className="absolute right-0 top-full mt-2 z-[200] w-52
-                          bg-brand-dark border border-brand-muted/15 rounded-2xl
-                          shadow-2xl overflow-hidden animate-scale-in">
+          <div
+            className="fixed z-[200] w-52 bg-brand-dark border border-brand-muted/15 rounded-2xl shadow-2xl overflow-hidden animate-scale-in"
+            style={{
+              top: rect ? rect.bottom + 8 : 0,
+              right: rect ? window.innerWidth - rect.right : 0,
+            }}
+          >
             {/* User info */}
             <div className="px-4 py-3 border-b border-brand-muted/10">
               <p className="text-brand-cream font-bold text-sm truncate">
@@ -77,7 +86,8 @@ export default function UserMenu({ syncing }: Props) {
               Sign out
             </button>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

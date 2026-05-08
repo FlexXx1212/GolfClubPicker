@@ -1,6 +1,7 @@
 'use client';
 
 import { Recommendation } from '@/lib/types';
+import { CATEGORY_ICONS } from '@/lib/defaults';
 import { getMinRollout } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
 import { Info, ArrowRight } from 'lucide-react';
@@ -9,14 +10,6 @@ interface Props {
   result: Recommendation;
   targetDistance: number;
 }
-
-const CATEGORY_ICONS: Record<string, string> = {
-  driver: '🏌️',
-  wood:   '🪵',
-  hybrid: '⚡',
-  iron:   '🔩',
-  wedge:  '🥏',
-};
 
 export default function RecommendationCard({ result, targetDistance }: Props) {
   const { primary, alternative, adjustedTarget, explanation } = result;
