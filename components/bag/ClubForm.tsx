@@ -151,6 +151,15 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
               </button>
             )}
           </div>
+          <input
+            type="range"
+            min={carry}
+            max={400}
+            step={1}
+            value={effectiveTotal}
+            onChange={(e) => setTotalCustom(Number(e.target.value))}
+            className="w-full mt-3 accent-brand-neon"
+          />
           <p className="text-[11px] text-brand-muted/60 mt-1.5">
             {totalCustom !== null ? 'Custom value' : 'Auto-calculated from carry + min. rollout'}
           </p>
