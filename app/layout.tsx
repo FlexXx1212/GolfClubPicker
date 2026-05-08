@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Syne, Bebas_Neue } from 'next/font/google';
 import './globals.css';
 import { BagProvider } from '@/lib/storage';
+import { TrackingProvider } from '@/lib/tracking-storage';
 import { AuthProvider } from '@/lib/auth';
 import BottomNav from '@/components/common/BottomNav';
 import AuthGate from '@/components/common/AuthGate';
@@ -38,14 +39,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-brand-black text-brand-cream min-h-screen font-sans antialiased">
         <AuthProvider>
           <BagProvider>
-            <AuthGate>
-              <div className="flex flex-col min-h-screen max-w-md mx-auto relative">
-                <main className="flex-1 pb-20 overflow-y-auto">
-                  {children}
-                </main>
-                <BottomNav />
-              </div>
-            </AuthGate>
+            <TrackingProvider>
+              <AuthGate>
+                <div className="flex flex-col min-h-screen max-w-md mx-auto relative">
+                  <main className="flex-1 pb-20 overflow-y-auto">
+                    {children}
+                  </main>
+                  <BottomNav />
+                </div>
+              </AuthGate>
+            </TrackingProvider>
           </BagProvider>
         </AuthProvider>
       </body>

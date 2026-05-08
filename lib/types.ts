@@ -9,6 +9,7 @@ export interface Club {
   name: string;          // e.g. "7 Iron", "52° GW", "Driver"
   category: ClubCategory;
   carry: number;         // carry distance in meters
+  total?: number;        // custom total distance (carry + rollout); auto-calculated if not set
 }
 
 export interface Bag {
@@ -33,4 +34,19 @@ export interface Recommendation {
   alternative: Club | null;
   adjustedTarget: number;
   explanation: string[];
+}
+
+// ─── Shot Tracking ──────────────────────────────────────────────────────────
+
+export interface TrackedShot {
+  id: string;
+  carry: number;
+  total: number;
+  timestamp: number;
+}
+
+export interface TrackingSession {
+  date: string;           // "YYYY-MM-DD" — one session per day
+  clubId: string;
+  shots: TrackedShot[];
 }

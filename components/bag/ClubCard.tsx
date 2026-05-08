@@ -3,7 +3,8 @@
 import { Club } from '@/lib/types';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Activity } from 'lucide-react';
+import Link from 'next/link';
 
 const CATEGORY_ICONS: Record<string, string> = {
   driver: '🏌️',
@@ -49,6 +50,13 @@ export default function ClubCard({ club, onEdit, onDelete }: Props) {
       </div>
 
       <div className="flex items-center gap-1">
+        <Link
+          href={`/tracking?club=${club.id}`}
+          className="p-2 rounded-lg text-brand-muted hover:text-brand-neon hover:bg-brand-neon/10 transition-colors"
+          aria-label={`Track shots for ${club.name}`}
+        >
+          <Activity size={15} />
+        </Link>
         <button
           onClick={onEdit}
           className="p-2 rounded-lg text-brand-muted hover:text-brand-cream hover:bg-brand-muted/10 transition-colors"

@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Target, Briefcase, Table2 } from 'lucide-react';
+import { Target, Briefcase, Table2, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TABS = [
-  { href: '/',      label: 'Shot',  icon: Target   },
-  { href: '/bag',   label: 'Bag',   icon: Briefcase },
-  { href: '/table', label: 'Table', icon: Table2    },
+  { href: '/',         label: 'Shot',  icon: Target    },
+  { href: '/tracking', label: 'Track', icon: Activity  },
+  { href: '/bag',      label: 'Bag',   icon: Briefcase },
+  { href: '/table',    label: 'Table', icon: Table2    },
 ];
 
 export default function BottomNav() {

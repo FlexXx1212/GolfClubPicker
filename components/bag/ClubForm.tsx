@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Club, ClubCategory } from '@/lib/types';
+import { getMinRollout } from '@/lib/rollout';
 import ClubTypeSelector from './ClubTypeSelector';
 import { X } from 'lucide-react';
 
@@ -15,11 +16,31 @@ export default function ClubForm({ initial, onSave, onCancel }: Props) {
   const [category, setCategory] = useState<ClubCategory>(initial?.category ?? 'iron');
   const [name,     setName]     = useState(initial?.name ?? '');
   const [carry,    setCarry]    = useState(initial?.carry ?? 150);
+  const [totalCustom, setTotalCustom] = useState<number | null>(initial?.total ?? null);
+
+  function getDefaultTotal(c: number, cat: ClubCategory): number {
+    return c + getMinRollout({ id: '', name: '', category: cat, carry: c });
+  }
+
+  const effectiveTotal = totalCustom ?? getDefaultTotal(carry, category);
+
+  function handleCarryChange(newCarry: number) {
+    setCarry(newCarry);
+    // Reset custom total when carry changes so the default recalculates
+    if (totalCustom !== null) {
+      setTotalCustom(null);
+    }
+  }
 
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed || carry <= 0) return;
-    onSave({ name: trimmed, category, carry });
+    onSave({
+      name: trimmed,
+      category,
+      carry,
+      total: totalCustom ?? undefined,
+    });
   }
 
   return (
@@ -83,7 +104,7 @@ export default function ClubForm({ initial, onSave, onCancel }: Props) {
               value={carry}
               min={10}
               max={350}
-              onChange={(e) => setCarry(Number(e.target.value))}
+              onChange={(e) => handleCarryChange(Number(e.target.value))}
               className="w-28 bg-brand-black/50 border border-brand-muted/20 rounded-xl px-4 py-3
                          text-brand-cream text-center text-lg font-bold
                          focus:outline-none focus:border-brand-neon/50 transition-colors"
@@ -96,9 +117,41 @@ export default function ClubForm({ initial, onSave, onCancel }: Props) {
             max={350}
             step={1}
             value={carry}
-            onChange={(e) => setCarry(Number(e.target.value))}
+            onChange={(e) => handleCarryChange(Number(e.target.value))}
             className="w-full mt-3 accent-brand-neon"
           />
+        </div>
+
+        {/* Total distance */}
+        <div>
+          <label className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-2 block">
+            Total Distance (Carry + Rollout)
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              value={effectiveTotal}
+              min={carry}
+              max={400}
+              onChange={(e) => setTotalCustom(Number(e.target.value))}
+              className="w-28 bg-brand-black/50 border border-brand-muted/20 rounded-xl px-4 py-3
+                         text-brand-cream text-center text-lg font-bold
+                         focus:outline-none focus:border-brand-neon/50 transition-colors"
+            />
+            <span className="text-brand-muted font-medium">meters</span>
+            {totalCustom !== null && (
+              <button
+                type="button"
+                onClick={() => setTotalCustom(null)}
+                className="text-xs text-brand-neon/70 hover:text-brand-neon transition-colors"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+          <p className="text-[11px] text-brand-muted/60 mt-1.5">
+            {totalCustom !== null ? 'Custom value' : 'Auto-calculated from carry + min. rollout'}
+          </p>
         </div>
 
         {/* Actions */}
