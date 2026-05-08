@@ -46,19 +46,28 @@ function selectClub(
   const ranges = buildRanges(sorted);
 
   if (hazard === 'front') {
-    // Must carry over the hazard — find first club whose carry >= adjustedTarget
-    const idx = sorted.findIndex((c) => c.carry >= adjustedTarget);
-    if (idx === -1) {
-      // No club reaches — recommend the longest
+    // Find the shortest club whose carry >= adjustedTarget (last match in desc array)
+    let shortestSufficientIdx = -1;
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      if (sorted[i].carry >= adjustedTarget) {
+        shortestSufficientIdx = i;
+        break;
+      }
+    }
+    if (shortestSufficientIdx === -1) {
       notes.push('Hazard ahead — no club can carry this distance; using longest');
       return { primaryIdx: 0, altIdx: null };
     }
+    // Take one club longer for safety over the front hazard
+    const recommendedIdx = shortestSufficientIdx > 0
+      ? shortestSufficientIdx - 1
+      : shortestSufficientIdx;
     notes.push(
-      `Front hazard — must carry ${adjustedTarget}m (rollout ignored)`
+      `Front hazard — need ${adjustedTarget}m carry, taking one club longer for safety`
     );
     return {
-      primaryIdx: idx,
-      altIdx: idx > 0 ? idx - 1 : null, // offer slightly longer alternative
+      primaryIdx: recommendedIdx,
+      altIdx: shortestSufficientIdx, // the "just enough" club as alternative
     };
   }
 
@@ -128,7 +137,7 @@ export function recommend(
   let adjustedTarget = adjusted;
 
   if (hazard === 'front') {
-    adjustedTarget += HAZARD_FRONT_BUFFER;
+    // No buffer added — instead we pick one club longer in selectClub
   }
 
   const { primaryIdx, altIdx } = selectClub(sorted, adjustedTarget, hazard, notes);
