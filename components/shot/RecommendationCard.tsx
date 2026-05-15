@@ -1,10 +1,10 @@
 'use client';
 
 import { Recommendation } from '@/lib/types';
-import { CATEGORY_ICONS } from '@/lib/defaults';
 import { getMinRollout } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
 import { Info, ArrowRight } from 'lucide-react';
+import ClubIcon from '@/components/common/ClubIcon';
 
 interface Props {
   result: Recommendation;
@@ -15,7 +15,6 @@ export default function RecommendationCard({ result, targetDistance }: Props) {
   const { primary, alternative, adjustedTarget, explanation } = result;
   const rollout   = getMinRollout(primary);
   const effective = primary.carry + rollout;
-  const icon      = CATEGORY_ICONS[primary.category] ?? '⛳';
   const maxBar    = Math.max(primary.carry, effective, targetDistance) + 20;
 
   return (
@@ -41,7 +40,7 @@ export default function RecommendationCard({ result, targetDistance }: Props) {
           {/* Club name row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-4xl">{icon}</span>
+              <span className="text-4xl"><ClubIcon category={primary.category} size={40} /></span>
               <div>
                 <p className="font-display text-[52px] leading-none text-brand-cream tracking-wide">
                   {primary.name.toUpperCase()}

@@ -2,9 +2,9 @@
 
 import { useBag } from '@/lib/storage';
 import { buildRanges } from '@/lib/ranges';
-import { CATEGORY_ICONS } from '@/lib/defaults';
 import { cn } from '@/lib/utils';
 import EmptyState from '@/components/common/EmptyState';
+import ClubIcon from '@/components/common/ClubIcon';
 import { Table2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -48,7 +48,6 @@ export default function DistanceTable() {
       {/* Rows with stagger animation */}
       <div className="space-y-1.5 stagger-children">
         {ranges.map((r, i) => {
-          const icon     = CATEGORY_ICONS[r.club.category] ?? '⛳';
           const isTop    = i === 0;
           const isBottom = i === ranges.length - 1;
           const barPct   = Math.min((r.club.carry / (maxCarry + 20)) * 100, 100);
@@ -79,7 +78,7 @@ export default function DistanceTable() {
                 <div className="relative grid grid-cols-12 gap-2 items-center px-4 py-3">
                   {/* Club name */}
                   <div className="col-span-5 flex items-center gap-2 min-w-0">
-                    <span className="text-lg leading-none">{icon}</span>
+                    <ClubIcon category={r.club.category} size={20} />
                     <span className={cn(
                       'font-bold text-sm truncate',
                       isTop ? 'text-brand-neon' : 'text-brand-cream'

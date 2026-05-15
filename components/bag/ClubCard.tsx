@@ -1,9 +1,9 @@
 import { Club } from '@/lib/types';
-import { CATEGORY_ICONS } from '@/lib/defaults';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
 import { Pencil, Activity } from 'lucide-react';
 import Link from 'next/link';
+import ClubIcon from '@/components/common/ClubIcon';
 
 interface Props {
   club: Club;
@@ -12,11 +12,10 @@ interface Props {
 
 export default function ClubCard({ club, onEdit }: Props) {
   const effective = getEffectiveTotal(club);
-  const icon = CATEGORY_ICONS[club.category] ?? '⛳';
 
   return (
     <div className="card flex items-center gap-3">
-      <span className="text-2xl">{icon}</span>
+      <ClubIcon category={club.category} size={28} />
 
       <div className="flex-1 min-w-0">
         <p className="text-brand-cream font-bold truncate">{club.name}</p>
