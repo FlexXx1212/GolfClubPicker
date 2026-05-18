@@ -70,9 +70,9 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
       const entries = Array.from(sessions.entries());
       for (const [clubId, shots] of entries) {
         const club = bag.clubs.find((c) => c.id === clubId);
-        if (!club || shots.length < 3) continue;
+        if (!club || shots.length === 0) continue;
         const stats = computeStats(shots);
-        if (stats.validCount >= 3) {
+        if (stats.validCount >= 1) {
           updateClub({ ...club, carry: stats.medianCarry, total: stats.medianTotal });
         }
       }
