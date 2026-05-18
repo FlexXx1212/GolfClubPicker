@@ -8,7 +8,8 @@ import { useTracking } from '@/lib/tracking-storage';
 import { computeStats } from '@/lib/tracking-stats';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
-import { Minus, Plus, X, Activity, ChevronDown } from 'lucide-react';
+import { Minus, Plus, X, Activity, ChevronDown, Upload } from 'lucide-react';
+import ShotImportModal from '@/components/tracking/ShotImportModal';
 
 export default function TrackingPage() {
   const searchParams = useSearchParams();
@@ -19,6 +20,7 @@ export default function TrackingPage() {
   const [carry, setCarry] = useState(150);
   const [total, setTotal] = useState(160);
   const [showSelector, setShowSelector] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const selectorBtnRef = useRef<HTMLButtonElement>(null);
 
   // Initialize from URL param or first club
@@ -73,12 +75,33 @@ export default function TrackingPage() {
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
       {/* Header */}
-      <div className="animate-slide-up">
-        <p className="section-label text-brand-neon/60 mb-1">Range Session</p>
-        <h1 className="font-display text-3xl tracking-wide text-brand-cream leading-none">
-          SHOT TRACKER
-        </h1>
+      <div className="animate-slide-up flex items-center justify-between">
+        <div>
+          <p className="section-label text-brand-neon/60 mb-1">Range Session</p>
+          <h1 className="font-display text-3xl tracking-wide text-brand-cream leading-none">
+            SHOT TRACKER
+          </h1>
+        </div>
+        <button
+          onClick={() => setShowImport(true)}
+          className="p-2.5 rounded-xl bg-brand-dark border border-brand-muted/20 text-brand-muted
+                     hover:text-brand-neon hover:border-brand-neon/30 transition-colors"
+          aria-label="Import shots"
+        >
+          <Upload size={18} />
+        </button>
       </div>
+
+      {/* Import Modal */}
+      {showImport && (
+        <ShotImportModal
+          onClose={() => setShowImport(false)}
+          onImported={() => {
+            // Reload current club session
+            if (selectedClubId) selectClub(selectedClubId);
+          }}
+        />
+      )}
 
       {/* Club Selector */}
       <div className="relative animate-slide-up">
