@@ -25,14 +25,6 @@ export interface ImportGroup {
   suggestedClubId: string | null;
 }
 
-// ─── Yard → Meter ───────────────────────────────────────────────────────────
-
-const YARD_TO_METER = 0.9144;
-
-function yardsToMeters(yards: number): number {
-  return Math.round(yards * YARD_TO_METER);
-}
-
 // ─── Club Name Mapping ──────────────────────────────────────────────────────
 
 const SHOTSCOPE_ALIASES: Record<string, string[]> = {
@@ -97,8 +89,8 @@ export function parseShotScopeExport(json: ShotScopeExport, clubs: Club[]): Impo
     const sourceClub = shot.Club?.trim();
     if (!sourceClub) continue;
 
-    const carry = yardsToMeters(shot['Carry Distance (yds)'] ?? 0);
-    const total = yardsToMeters(shot['Total Distance (yds)'] ?? 0);
+    const carry = Math.round(shot['Carry Distance (yds)'] ?? 0);
+    const total = Math.round(shot['Total Distance (yds)'] ?? 0);
     if (carry <= 0) continue;
 
     if (!groups.has(sourceClub.toLowerCase())) {
@@ -114,7 +106,12 @@ export function parseShotScopeExport(json: ShotScopeExport, clubs: Club[]): Impo
     groups.get(sourceClub.toLowerCase())!.shots.push({ carry, total });
   }
 
-  return Array.from(groups.values());
+  // Sort by average carry descending (longest club first)
+  return Array.from(groups.values()).sort((a, b) => {
+    const avgA = a.shots.reduce((s, x) => s + x.carry, 0) / (a.shots.length || 1);
+    const avgB = b.shots.reduce((s, x) => s + x.carry, 0) / (b.shots.length || 1);
+    return avgB - avgA;
+  });
 }
 
 /** Extract date from ShotScope export (format: "DD/MM/YYYY - N shots") */
