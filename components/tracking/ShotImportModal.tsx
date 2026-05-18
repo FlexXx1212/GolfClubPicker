@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { Upload, X, Check, AlertTriangle } from 'lucide-react';
 import { useBag } from '@/lib/storage';
 import { useAuth } from '@/lib/auth';
+import { computeStats } from '@/lib/tracking-stats';
 import {
   parseShotScopeExport,
   extractDate,
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export default function ShotImportModal({ onClose, onImported }: Props) {
-  const { bag } = useBag();
+  const { bag, updateClub } = useBag();
   const { user } = useAuth();
   const [groups, setGroups] = useState<ImportGroup[] | null>(null);
   const [date, setDate] = useState<string>('');
@@ -64,6 +65,18 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
     try {
       const sessions = buildImportSessions(groups);
       await importShotsForClubs(user?.uid ?? null, sessions, date);
+
+      // Auto-apply median distances to each mapped club
+      const entries = Array.from(sessions.entries());
+      for (const [clubId, shots] of entries) {
+        const club = bag.clubs.find((c) => c.id === clubId);
+        if (!club || shots.length < 3) continue;
+        const stats = computeStats(shots);
+        if (stats.validCount >= 3) {
+          updateClub({ ...club, carry: stats.medianCarry, total: stats.medianTotal });
+        }
+      }
+
       setDone(true);
       setTimeout(() => {
         onImported();
