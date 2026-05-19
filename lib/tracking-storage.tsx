@@ -6,9 +6,10 @@ import {
   useReducer,
   useEffect,
   useCallback,
+  useState,
   ReactNode,
 } from 'react';
-import { doc, setDoc, onSnapshot, runTransaction } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, runTransaction, collection, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './auth';
 import { TrackedShot, TrackingSession } from './types';
@@ -46,6 +47,7 @@ function trackingReducer(state: TrackingSession, action: TrackingAction): Tracki
 
 interface TrackingContextValue {
   session: TrackingSession;
+  allShots: TrackedShot[];
   loading: boolean;
   selectClub: (clubId: string) => void;
   addShot: (carry: number, total: number) => void;
@@ -85,6 +87,7 @@ function saveLocalSession(session: TrackingSession) {
 export function TrackingProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [session, dispatch] = useReducer(trackingReducer, emptySession(''));
+  const [allShots, setAllShots] = useState<TrackedShot[]>([]);
   const [loading, setLoading] = useReducer((_: boolean, v: boolean) => v, false);
   const [loaded, setLoaded] = useReducer((_: boolean, v: boolean) => v, false);
   const [activeClubId, setActiveClubId] = useReducer((_: string, v: string) => v, '');
@@ -137,6 +140,40 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     }
   }, [session, user, loaded, activeClubId]);
 
+  // Fetch ALL shots for this club across all sessions (for last-5 stats)
+  useEffect(() => {
+    if (!activeClubId) { setAllShots([]); return; }
+
+    if (user) {
+      const trackingCol = collection(db, 'users', user.uid, 'tracking');
+      getDocs(trackingCol).then((snapshot) => {
+        const shots: TrackedShot[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as TrackingSession;
+          if (data.clubId === activeClubId) {
+            shots.push(...data.shots);
+          }
+        });
+        shots.sort((a, b) => b.timestamp - a.timestamp);
+        setAllShots(shots);
+      }).catch(() => setAllShots([]));
+    } else {
+      // Gather from localStorage
+      const shots: TrackedShot[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(`${LOCAL_KEY_PREFIX}${activeClubId}__`)) {
+          try {
+            const s = JSON.parse(localStorage.getItem(key)!) as TrackingSession;
+            shots.push(...s.shots);
+          } catch { /* ignore */ }
+        }
+      }
+      shots.sort((a, b) => b.timestamp - a.timestamp);
+      setAllShots(shots);
+    }
+  }, [activeClubId, user, session]); // re-fetch when session changes (new shots added)
+
   const addShot = useCallback((carry: number, total: number) => {
     dispatch({
       type: 'ADD_SHOT',
@@ -149,7 +186,7 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <TrackingContext.Provider value={{ session, loading, selectClub, addShot, removeShot }}>
+    <TrackingContext.Provider value={{ session, allShots, loading, selectClub, addShot, removeShot }}>
       {children}
     </TrackingContext.Provider>
   );

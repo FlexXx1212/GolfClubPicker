@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { Upload, X, Check, AlertTriangle } from 'lucide-react';
 import { useBag } from '@/lib/storage';
 import { useAuth } from '@/lib/auth';
-import { computeStats } from '@/lib/tracking-stats';
+import { computeStatsLastN } from '@/lib/tracking-stats';
 import {
   parseShotScopeExport,
   extractDate,
@@ -71,7 +71,7 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
       for (const [clubId, shots] of entries) {
         const club = bag.clubs.find((c) => c.id === clubId);
         if (!club || shots.length === 0) continue;
-        const stats = computeStats(shots);
+        const stats = computeStatsLastN(shots, 5);
         if (stats.validCount >= 1) {
           updateClub({ ...club, carry: stats.medianCarry, total: stats.medianTotal });
         }

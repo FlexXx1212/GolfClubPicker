@@ -68,3 +68,12 @@ export function computeStats(shots: TrackedShot[]): TrackingStats {
     validCount: valid.length,
   };
 }
+
+/**
+ * Computes stats from the last N shots (by timestamp, descending).
+ * Excludes outliers as usual.
+ */
+export function computeStatsLastN(allShots: TrackedShot[], n: number = 5): TrackingStats {
+  const sorted = [...allShots].sort((a, b) => b.timestamp - a.timestamp).slice(0, n);
+  return computeStats(sorted);
+}

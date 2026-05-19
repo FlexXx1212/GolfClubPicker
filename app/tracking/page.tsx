@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { useBag } from '@/lib/storage';
 import { useTracking } from '@/lib/tracking-storage';
-import { computeStats } from '@/lib/tracking-stats';
+import { computeStats, computeStatsLastN } from '@/lib/tracking-stats';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
 import { Minus, Plus, X, Activity, ChevronDown, Upload } from 'lucide-react';
@@ -14,7 +14,7 @@ import ShotImportModal from '@/components/tracking/ShotImportModal';
 export default function TrackingPage() {
   const searchParams = useSearchParams();
   const { bag } = useBag();
-  const { session, loading, selectClub, addShot, removeShot } = useTracking();
+  const { session, allShots, loading, selectClub, addShot, removeShot } = useTracking();
 
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [carry, setCarry] = useState(150);
@@ -55,7 +55,8 @@ export default function TrackingPage() {
   }, [session.shots.length]);
 
   const selectedClub = bag.clubs.find((c) => c.id === selectedClubId);
-  const stats = computeStats(session.shots);
+  const sessionStats = computeStats(session.shots);
+  const stats = computeStatsLastN(allShots, 5);
 
   function handleAddShot() {
     if (carry <= 0 || total <= 0) return;
@@ -232,12 +233,12 @@ export default function TrackingPage() {
         </button>
       </div>
 
-      {/* Stats */}
-      {session.shots.length > 0 && (
+      {/* Stats (last 5 shots across all sessions) */}
+      {allShots.length > 0 && (
         <div className="card animate-slide-up">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest">
-              Today · {session.shots.length} shot{session.shots.length !== 1 ? 's' : ''}
+              Last {Math.min(allShots.length, 5)} shot{Math.min(allShots.length, 5) !== 1 ? 's' : ''}
             </p>
             {stats.outlierIds.size > 0 && (
               <p className="text-[10px] text-brand-muted/60">
@@ -258,11 +259,14 @@ export default function TrackingPage() {
         </div>
       )}
 
-      {/* Shot List */}
+      {/* Shot List (today's session) */}
       {session.shots.length > 0 && (
         <div className="space-y-1.5 animate-slide-up">
+          <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest px-1">
+            Today · {session.shots.length} shot{session.shots.length !== 1 ? 's' : ''}
+          </p>
           {[...session.shots].reverse().map((shot, i) => {
-            const isOutlier = stats.outlierIds.has(shot.id);
+            const isOutlier = sessionStats.outlierIds.has(shot.id);
             return (
               <div
                 key={shot.id}
@@ -307,7 +311,7 @@ export default function TrackingPage() {
       )}
 
       {/* Apply to Club */}
-      {stats.validCount >= 3 && selectedClub && (
+      {stats.validCount >= 1 && selectedClub && (
         <ApplyButton
           medianCarry={stats.medianCarry}
           medianTotal={stats.medianTotal}
@@ -352,7 +356,7 @@ function ApplyButton({ medianCarry, medianTotal, club }: {
         Update Club Distances
       </p>
       <p className="text-brand-cream text-sm mb-3">
-        Apply today&apos;s median as new values for <span className="font-bold">{club.name}</span>?
+        Apply last 5 shots median as new values for <span className="font-bold">{club.name}</span>?
       </p>
       <div className="text-xs text-brand-muted mb-3 space-y-0.5">
         {carryChanged && <p>Carry: {club.carry}m → <span className="text-brand-neon">{medianCarry}m</span></p>}
