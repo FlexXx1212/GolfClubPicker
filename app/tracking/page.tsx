@@ -310,9 +310,65 @@ export default function TrackingPage() {
         </div>
       )}
 
+      {/* Save to Club (only when today's session has shots) */}
+      {session.shots.length > 0 && selectedClub && stats.validCount >= 1 && (
+        <SaveButton
+          medianCarry={stats.medianCarry}
+          medianTotal={stats.medianTotal}
+          club={selectedClub}
+        />
+      )}
+
       {loading && (
         <p className="text-center text-brand-muted text-xs animate-pulse">Loading session…</p>
       )}
+    </div>
+  );
+}
+
+// ─── Save Button Component ───────────────────────────────────────────────────
+
+import { useBag as useBagForSave } from '@/lib/storage';
+import { Club } from '@/lib/types';
+
+function SaveButton({ medianCarry, medianTotal, club }: {
+  medianCarry: number;
+  medianTotal: number;
+  club: Club;
+}) {
+  const { updateClub } = useBagForSave();
+  const [saved, setSaved] = useState(false);
+
+  function handleSave() {
+    updateClub({ ...club, carry: medianCarry, total: medianTotal });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  const carryChanged = medianCarry !== club.carry;
+  const totalChanged = medianTotal !== (club.total ?? getEffectiveTotal(club));
+
+  if (!carryChanged && !totalChanged) return null;
+
+  return (
+    <div className="card animate-slide-up">
+      <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-2">
+        Save to Club
+      </p>
+      <div className="text-xs text-brand-muted mb-3 space-y-0.5">
+        {carryChanged && <p>Carry: {club.carry}m → <span className="text-brand-neon">{medianCarry}m</span></p>}
+        {totalChanged && <p>Total: {club.total ?? getEffectiveTotal(club)}m → <span className="text-brand-neon">{medianTotal}m</span></p>}
+      </div>
+      <button
+        onClick={handleSave}
+        disabled={saved}
+        className={cn(
+          'btn-primary w-full !py-2.5 text-sm',
+          saved && '!bg-green-600 !text-white'
+        )}
+      >
+        {saved ? '✓ Saved!' : 'Save Distances'}
+      </button>
     </div>
   );
 }
