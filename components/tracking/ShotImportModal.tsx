@@ -3,8 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Upload, X, Check, AlertTriangle } from 'lucide-react';
 import { useBag } from '@/lib/storage';
-import { useAuth } from '@/lib/auth';
-import { computeStatsLastN } from '@/lib/tracking-stats';
+import { computeStats } from '@/lib/tracking-stats';
 import {
   parseShotScopeExport,
   extractDate,
@@ -12,7 +11,6 @@ import {
   ImportGroup,
   ShotScopeExport,
 } from '@/lib/shotscope-import';
-import { importShotsForClubs } from '@/lib/tracking-storage';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -22,7 +20,6 @@ interface Props {
 
 export default function ShotImportModal({ onClose, onImported }: Props) {
   const { bag, updateClub } = useBag();
-  const { user } = useAuth();
   const [groups, setGroups] = useState<ImportGroup[] | null>(null);
   const [date, setDate] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -64,14 +61,13 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
     setImporting(true);
     try {
       const sessions = buildImportSessions(groups);
-      await importShotsForClubs(user?.uid ?? null, sessions, date);
 
-      // Auto-apply median distances to each mapped club
+      // Apply median distances to each mapped club directly
       const entries = Array.from(sessions.entries());
       for (const [clubId, shots] of entries) {
         const club = bag.clubs.find((c) => c.id === clubId);
         if (!club || shots.length === 0) continue;
-        const stats = computeStatsLastN(shots, 5);
+        const stats = computeStats(shots);
         if (stats.validCount >= 1) {
           updateClub({ ...club, carry: stats.medianCarry, total: stats.medianTotal });
         }

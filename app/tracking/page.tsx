@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { useBag } from '@/lib/storage';
 import { useTracking } from '@/lib/tracking-storage';
-import { computeStats, computeStatsLastN } from '@/lib/tracking-stats';
+import { computeStats } from '@/lib/tracking-stats';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
 import { Minus, Plus, X, Activity, ChevronDown, Upload } from 'lucide-react';
@@ -13,14 +13,15 @@ import ShotImportModal from '@/components/tracking/ShotImportModal';
 
 export default function TrackingPage() {
   const searchParams = useSearchParams();
-  const { bag } = useBag();
-  const { session, allShots, loading, selectClub, addShot, removeShot } = useTracking();
+  const { bag, updateClub } = useBag();
+  const { session, selectClub, addShot, removeShot, clearShots } = useTracking();
 
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [carry, setCarry] = useState(150);
   const [total, setTotal] = useState(160);
   const [showSelector, setShowSelector] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [saved, setSaved] = useState(false);
   const selectorBtnRef = useRef<HTMLButtonElement>(null);
 
   // Initialize from URL param or first club
@@ -33,7 +34,7 @@ export default function TrackingPage() {
     }
   }, [searchParams, bag.clubs, selectedClubId]);
 
-  // When club selection changes, load session and set defaults
+  // When club selection changes, reset session and set defaults
   useEffect(() => {
     if (!selectedClubId) return;
     selectClub(selectedClubId);
@@ -55,12 +56,22 @@ export default function TrackingPage() {
   }, [session.shots.length]);
 
   const selectedClub = bag.clubs.find((c) => c.id === selectedClubId);
-  const sessionStats = computeStats(session.shots);
-  const stats = computeStatsLastN(allShots, 5);
+  const stats = computeStats(session.shots);
 
   function handleAddShot() {
     if (carry <= 0 || total <= 0) return;
     addShot(carry, total);
+    setSaved(false);
+  }
+
+  function handleSave() {
+    if (!selectedClub || stats.validCount < 1) return;
+    updateClub({ ...selectedClub, carry: stats.medianCarry, total: stats.medianTotal });
+    setSaved(true);
+    setTimeout(() => {
+      clearShots();
+      setSaved(false);
+    }, 1200);
   }
 
   if (bag.clubs.length === 0) {
@@ -97,10 +108,7 @@ export default function TrackingPage() {
       {showImport && (
         <ShotImportModal
           onClose={() => setShowImport(false)}
-          onImported={() => {
-            // Reload current club session
-            if (selectedClubId) selectClub(selectedClubId);
-          }}
+          onImported={() => {}}
         />
       )}
 
@@ -233,142 +241,90 @@ export default function TrackingPage() {
         </button>
       </div>
 
-      {/* Stats (last 5 shots across all sessions) */}
-      {allShots.length > 0 && (
-        <div className="card animate-slide-up">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest">
-              Last {Math.min(allShots.length, 5)} shot{Math.min(allShots.length, 5) !== 1 ? 's' : ''}
-            </p>
-            {stats.outlierIds.size > 0 && (
-              <p className="text-[10px] text-brand-muted/60">
-                {stats.outlierIds.size} outlier{stats.outlierIds.size !== 1 ? 's' : ''} excluded
-              </p>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="text-brand-muted text-[10px] font-bold tracking-widest uppercase">Median Carry</p>
-              <p className="font-display text-2xl text-brand-cream">{stats.medianCarry}<span className="text-brand-muted text-sm">m</span></p>
-            </div>
-            <div className="text-center">
-              <p className="text-brand-muted text-[10px] font-bold tracking-widest uppercase">Median Total</p>
-              <p className="font-display text-2xl text-brand-neon">{stats.medianTotal}<span className="text-brand-muted/70 text-sm">m</span></p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Shot List (today's session) */}
+      {/* Shot List */}
       {session.shots.length > 0 && (
-        <div className="space-y-1.5 animate-slide-up">
-          <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest px-1">
-            Today · {session.shots.length} shot{session.shots.length !== 1 ? 's' : ''}
-          </p>
-          {[...session.shots].reverse().map((shot, i) => {
-            const isOutlier = sessionStats.outlierIds.has(shot.id);
-            return (
-              <div
-                key={shot.id}
-                className={cn(
-                  'flex items-center justify-between px-4 py-2.5 rounded-xl border',
-                  isOutlier
-                    ? 'border-red-500/20 bg-red-500/5'
-                    : 'border-brand-muted/10 bg-brand-dark/30'
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-brand-muted text-xs font-bold w-5">
-                    #{session.shots.length - i}
-                  </span>
-                  <span className={cn(
-                    'text-sm font-bold',
-                    isOutlier ? 'line-through text-brand-muted/50' : 'text-brand-cream'
-                  )}>
-                    {shot.carry}m
-                  </span>
-                  <span className="text-brand-muted/30">/</span>
-                  <span className={cn(
-                    'text-sm font-bold',
-                    isOutlier ? 'line-through text-brand-muted/50' : 'text-brand-neon/80'
-                  )}>
-                    {shot.total}m
-                  </span>
-                  {isOutlier && (
-                    <span className="text-[9px] text-red-400/80 font-bold uppercase tracking-wider">outlier</span>
-                  )}
-                </div>
-                <button
-                  onClick={() => removeShot(shot.id)}
-                  className="p-1.5 rounded-lg text-brand-muted hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                >
-                  <X size={14} />
-                </button>
+        <>
+          <div className="card animate-slide-up">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest">
+                {session.shots.length} shot{session.shots.length !== 1 ? 's' : ''}
+              </p>
+              {stats.outlierIds.size > 0 && (
+                <p className="text-[10px] text-brand-muted/60">
+                  {stats.outlierIds.size} outlier{stats.outlierIds.size !== 1 ? 's' : ''} excluded
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-3">
+              <div className="text-center">
+                <p className="text-brand-muted text-[10px] font-bold tracking-widest uppercase">Median Carry</p>
+                <p className="font-display text-2xl text-brand-cream">{stats.medianCarry}<span className="text-brand-muted text-sm">m</span></p>
               </div>
-            );
-          })}
-        </div>
+              <div className="text-center">
+                <p className="text-brand-muted text-[10px] font-bold tracking-widest uppercase">Median Total</p>
+                <p className="font-display text-2xl text-brand-neon">{stats.medianTotal}<span className="text-brand-muted/70 text-sm">m</span></p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-1.5 animate-slide-up">
+            {[...session.shots].reverse().map((shot, i) => {
+              const isOutlier = stats.outlierIds.has(shot.id);
+              return (
+                <div
+                  key={shot.id}
+                  className={cn(
+                    'flex items-center justify-between px-4 py-2.5 rounded-xl border',
+                    isOutlier
+                      ? 'border-red-500/20 bg-red-500/5'
+                      : 'border-brand-muted/10 bg-brand-dark/30'
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-brand-muted text-xs font-bold w-5">
+                      #{session.shots.length - i}
+                    </span>
+                    <span className={cn(
+                      'text-sm font-bold',
+                      isOutlier ? 'line-through text-brand-muted/50' : 'text-brand-cream'
+                    )}>
+                      {shot.carry}m
+                    </span>
+                    <span className="text-brand-muted/30">/</span>
+                    <span className={cn(
+                      'text-sm font-bold',
+                      isOutlier ? 'line-through text-brand-muted/50' : 'text-brand-neon/80'
+                    )}>
+                      {shot.total}m
+                    </span>
+                    {isOutlier && (
+                      <span className="text-[9px] text-red-400/80 font-bold uppercase tracking-wider">outlier</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeShot(shot.id)}
+                    className="p-1.5 rounded-lg text-brand-muted hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Save Button */}
+          <button
+            onClick={handleSave}
+            disabled={saved}
+            className={cn(
+              'btn-primary w-full !py-3 text-sm animate-slide-up',
+              saved && '!bg-green-600 !text-white'
+            )}
+          >
+            {saved ? '✓ Saved!' : `Save Distances (${stats.medianCarry}m / ${stats.medianTotal}m)`}
+          </button>
+        </>
       )}
-
-      {/* Save to Club (only when today's session has shots) */}
-      {session.shots.length > 0 && selectedClub && stats.validCount >= 1 && (
-        <SaveButton
-          medianCarry={stats.medianCarry}
-          medianTotal={stats.medianTotal}
-          club={selectedClub}
-        />
-      )}
-
-      {loading && (
-        <p className="text-center text-brand-muted text-xs animate-pulse">Loading session…</p>
-      )}
-    </div>
-  );
-}
-
-// ─── Save Button Component ───────────────────────────────────────────────────
-
-import { useBag as useBagForSave } from '@/lib/storage';
-import { Club } from '@/lib/types';
-
-function SaveButton({ medianCarry, medianTotal, club }: {
-  medianCarry: number;
-  medianTotal: number;
-  club: Club;
-}) {
-  const { updateClub } = useBagForSave();
-  const [saved, setSaved] = useState(false);
-
-  function handleSave() {
-    updateClub({ ...club, carry: medianCarry, total: medianTotal });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  const carryChanged = medianCarry !== club.carry;
-  const totalChanged = medianTotal !== (club.total ?? getEffectiveTotal(club));
-
-  if (!carryChanged && !totalChanged) return null;
-
-  return (
-    <div className="card animate-slide-up">
-      <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-2">
-        Save to Club
-      </p>
-      <div className="text-xs text-brand-muted mb-3 space-y-0.5">
-        {carryChanged && <p>Carry: {club.carry}m → <span className="text-brand-neon">{medianCarry}m</span></p>}
-        {totalChanged && <p>Total: {club.total ?? getEffectiveTotal(club)}m → <span className="text-brand-neon">{medianTotal}m</span></p>}
-      </div>
-      <button
-        onClick={handleSave}
-        disabled={saved}
-        className={cn(
-          'btn-primary w-full !py-2.5 text-sm',
-          saved && '!bg-green-600 !text-white'
-        )}
-      >
-        {saved ? '✓ Saved!' : 'Save Distances'}
-      </button>
     </div>
   );
 }
