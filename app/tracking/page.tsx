@@ -310,68 +310,9 @@ export default function TrackingPage() {
         </div>
       )}
 
-      {/* Apply to Club */}
-      {stats.validCount >= 1 && selectedClub && (
-        <ApplyButton
-          medianCarry={stats.medianCarry}
-          medianTotal={stats.medianTotal}
-          club={selectedClub}
-        />
-      )}
-
       {loading && (
         <p className="text-center text-brand-muted text-xs animate-pulse">Loading session…</p>
       )}
-    </div>
-  );
-}
-
-// ─── Apply Button Component ──────────────────────────────────────────────────
-
-import { useBag as useBagForApply } from '@/lib/storage';
-import { Club } from '@/lib/types';
-
-function ApplyButton({ medianCarry, medianTotal, club }: {
-  medianCarry: number;
-  medianTotal: number;
-  club: Club;
-}) {
-  const { updateClub } = useBagForApply();
-  const [applied, setApplied] = useState(false);
-
-  function handleApply() {
-    updateClub({ ...club, carry: medianCarry, total: medianTotal });
-    setApplied(true);
-    setTimeout(() => setApplied(false), 2000);
-  }
-
-  const carryChanged = medianCarry !== club.carry;
-  const totalChanged = medianTotal !== (club.total ?? getEffectiveTotal(club));
-
-  if (!carryChanged && !totalChanged) return null;
-
-  return (
-    <div className="card animate-slide-up">
-      <p className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-2">
-        Update Club Distances
-      </p>
-      <p className="text-brand-cream text-sm mb-3">
-        Apply last 5 shots median as new values for <span className="font-bold">{club.name}</span>?
-      </p>
-      <div className="text-xs text-brand-muted mb-3 space-y-0.5">
-        {carryChanged && <p>Carry: {club.carry}m → <span className="text-brand-neon">{medianCarry}m</span></p>}
-        {totalChanged && <p>Total: {club.total ?? getEffectiveTotal(club)}m → <span className="text-brand-neon">{medianTotal}m</span></p>}
-      </div>
-      <button
-        onClick={handleApply}
-        disabled={applied}
-        className={cn(
-          'btn-primary w-full !py-2.5 text-sm',
-          applied && '!bg-green-600 !text-white'
-        )}
-      >
-        {applied ? '✓ Applied!' : 'Apply to Club'}
-      </button>
     </div>
   );
 }
