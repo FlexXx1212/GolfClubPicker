@@ -191,16 +191,16 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
         )}
 
         {/* Actions */}
-        <div className="flex gap-3 pt-1">
-          <button onClick={onCancel} className="btn-secondary flex-1">
+        <div className="flex gap-2 pt-1">
+          <button onClick={onCancel} className="btn-secondary px-4">
             Cancel
           </button>
           {initial && onDelete && !showDeleteConfirm && (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center justify-center gap-1.5 px-4 rounded-xl
+              className="flex items-center justify-center px-3 rounded-xl
                          text-red-400/70 hover:text-red-400 hover:bg-red-400/5
-                         border border-red-400/15 transition-colors text-sm font-medium"
+                         border border-red-400/15 transition-colors"
             >
               <Trash2 size={14} />
             </button>
@@ -210,7 +210,7 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
             disabled={!name.trim() || carry <= 0}
             className="btn-primary flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {initial ? 'Save Changes' : 'Add Club'}
+            {initial ? 'Save' : 'Add Club'}
           </button>
         </div>
       </div>
