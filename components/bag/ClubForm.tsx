@@ -163,19 +163,6 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
           />
         </div>
 
-        {/* Delete (only in edit mode) */}
-        {initial && onDelete && !showDeleteConfirm && (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl
-                       text-red-400/70 hover:text-red-400 hover:bg-red-400/5
-                       border border-red-400/15 transition-colors text-sm font-medium"
-          >
-            <Trash2 size={14} />
-            Delete Club
-          </button>
-        )}
-
         {/* Delete confirmation */}
         {showDeleteConfirm && onDelete && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 space-y-3">
@@ -208,6 +195,16 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
           <button onClick={onCancel} className="btn-secondary flex-1">
             Cancel
           </button>
+          {initial && onDelete && !showDeleteConfirm && (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center justify-center gap-1.5 px-4 rounded-xl
+                         text-red-400/70 hover:text-red-400 hover:bg-red-400/5
+                         border border-red-400/15 transition-colors text-sm font-medium"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
           <button
             onClick={handleSave}
             disabled={!name.trim() || carry <= 0}
