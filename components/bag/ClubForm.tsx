@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Club, ClubCategory } from '@/lib/types';
 import { getMinRollout } from '@/lib/rollout';
 import ClubTypeSelector from './ClubTypeSelector';
@@ -19,6 +19,13 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
   const [carry,    setCarry]    = useState(initial?.carry ?? 150);
   const [totalCustom, setTotalCustom] = useState<number | null>(initial?.total ?? null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = original; };
+  }, []);
 
   function getDefaultTotal(c: number, cat: ClubCategory): number {
     return c + getMinRollout({ id: '', name: '', category: cat, carry: c });
@@ -44,10 +51,10 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
 
   return (
     /* Overlay */
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-6 pb-4" style={{ height: '100dvh' }}>
       <div className="absolute inset-0 bg-brand-black/80 backdrop-blur-sm" onClick={onCancel} />
 
-      <div className="relative w-full max-w-md bg-brand-dark border border-brand-muted/20 rounded-2xl p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-md bg-brand-dark border border-brand-muted/20 rounded-2xl p-5 space-y-4 shadow-2xl max-h-[calc(100dvh-5rem)] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-brand-cream font-bold text-lg">
@@ -63,9 +70,6 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
 
         {/* Club type selector */}
         <div>
-          <label className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-2 block">
-            Club Type
-          </label>
           <ClubTypeSelector
             selectedCategory={category}
             selectedName={name}
