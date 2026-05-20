@@ -51,10 +51,10 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
 
   return (
     /* Overlay */
-    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-3 pb-4" style={{ height: '100dvh' }}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-3 pb-20" style={{ height: '100dvh' }}>
       <div className="absolute inset-0 bg-brand-black/80 backdrop-blur-sm" onClick={onCancel} />
 
-      <div className="relative w-full max-w-md bg-brand-dark border border-brand-muted/20 rounded-2xl p-5 space-y-4 shadow-2xl max-h-[calc(100dvh-3.5rem)] overflow-y-auto">
+      <div className="relative w-full max-w-md bg-brand-dark border border-brand-muted/20 rounded-2xl p-5 space-y-4 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-brand-cream font-bold text-lg">
