@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Upload, X, Check, AlertTriangle } from 'lucide-react';
 import { useBag } from '@/lib/storage';
 import { computeStats } from '@/lib/tracking-stats';
@@ -25,6 +25,13 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
   const [error, setError] = useState<string>('');
   const [importing, setImporting] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Lock body scroll while modal is open to prevent mobile viewport shift
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = original; };
+  }, []);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,7 +95,7 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
   const totalShots = groups?.filter((g) => g.mappedClubId).reduce((sum, g) => sum + g.shots.length, 0) ?? 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-4" style={{ height: '100dvh' }}>
       <div className="absolute inset-0 bg-brand-black/80 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full max-w-md bg-brand-dark border border-brand-muted/20 rounded-2xl p-5 space-y-4 shadow-2xl max-h-[80vh] overflow-y-auto">
