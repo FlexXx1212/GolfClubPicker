@@ -28,15 +28,6 @@ export default function RecommendationCard({ result, targetDistance }: Props) {
         <div className="absolute inset-0 bg-gradient-to-br from-brand-neon/8 via-transparent to-brand-neon/4 pointer-events-none" />
 
         <div className="relative p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="section-label text-brand-neon/70">Recommended Club</span>
-            <span className="text-xs font-bold text-brand-muted/60 tracking-wide">
-              {adjustedTarget !== targetDistance
-                ? `Adjusted → ${adjustedTarget}m`
-                : `${targetDistance}m target`}
-            </span>
-          </div>
-
           {/* Club name row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

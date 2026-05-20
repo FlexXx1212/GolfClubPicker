@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Target, Briefcase, Table2, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import UserMenu from '@/components/common/UserMenu';
+import { useBag } from '@/lib/storage';
 
 const TABS = [
   { href: '/',         label: 'Shot',  icon: Target    },
@@ -14,6 +16,7 @@ const TABS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { syncing } = useBag();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto">
@@ -51,6 +54,8 @@ export default function BottomNav() {
               </Link>
             );
           })}
+          {/* User menu button */}
+          <UserMenu syncing={syncing} />
         </div>
       </div>
     </nav>

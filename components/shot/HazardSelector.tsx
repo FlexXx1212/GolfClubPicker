@@ -17,7 +17,7 @@ interface Props {
 
 export default function HazardSelector({ value, onChange }: Props) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-1">
       {OPTIONS.map(({ value: v, label, icon: Icon, desc }) => {
         const active = value === v;
         return (
@@ -25,14 +25,14 @@ export default function HazardSelector({ value, onChange }: Props) {
             key={v}
             onClick={() => onChange(v)}
             className={cn(
-              'flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-medium transition-all duration-150 active:scale-95',
+              'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all duration-150 active:scale-95',
               active
                 ? 'bg-brand-neon text-brand-black shadow-lg shadow-brand-neon/20'
                 : 'bg-brand-dark/60 border border-brand-muted/20 text-brand-muted hover:border-brand-muted/40'
             )}
             title={desc}
           >
-            <Icon size={16} strokeWidth={active ? 2.5 : 1.8} />
+            <Icon size={14} strokeWidth={active ? 2.5 : 1.8} />
             <span>{label}</span>
           </button>
         );

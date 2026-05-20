@@ -9,12 +9,10 @@ import HazardSelector from './HazardSelector';
 import LieSelector from './LieSelector';
 import RecommendationCard from './RecommendationCard';
 import EmptyState from '@/components/common/EmptyState';
-import UserMenu from '@/components/common/UserMenu';
-import { Briefcase } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ShotCalculator() {
-  const { bag, syncing } = useBag();
+  const { bag } = useBag();
   const [distance, setDistance] = useState(150);
   const [hazard, setHazard]     = useState<Hazard>('none');
   const [lie, setLie]           = useState<Lie>('good');
@@ -36,36 +34,21 @@ export default function ShotCalculator() {
   const result = recommend(bag.clubs, distance, hazard, lie);
 
   return (
-    <div className="px-4 pt-6 pb-4 space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between animate-slide-up">
-        <div>
-          <p className="section-label text-brand-neon/60 mb-1">Golf Club Picker</p>
-          <h1 className="text-3xl font-display tracking-wide text-brand-cream leading-none">
-            SHOT PLANNER
-          </h1>
-        </div>
-        <UserMenu syncing={syncing} />
-      </div>
-
+    <div className="px-4 pt-4 pb-4 space-y-4">
       {/* Distance */}
-      <section className="card space-y-3 animate-slide-up" style={{ animationDelay: '50ms' }}>
-        <h2 className="section-label">Target Distance</h2>
+      <section className="card space-y-3 animate-slide-up">
         <DistanceInput value={distance} onChange={setDistance} />
       </section>
 
       {/* Conditions */}
-      <section className="card space-y-4 animate-slide-up" style={{ animationDelay: '100ms' }}>
-        <h2 className="section-label">Conditions</h2>
-        <div className="space-y-3">
-          <div>
-            <p className="text-brand-muted/70 text-[11px] font-bold tracking-widest uppercase mb-2">Hazard</p>
-            <HazardSelector value={hazard} onChange={setHazard} />
-          </div>
-          <div>
-            <p className="text-brand-muted/70 text-[11px] font-bold tracking-widest uppercase mb-2">Lie</p>
-            <LieSelector value={lie} onChange={setLie} />
-          </div>
+      <section className="card space-y-3 animate-slide-up" style={{ animationDelay: '50ms' }}>
+        <div className="flex items-center gap-3">
+          <span className="text-brand-muted/70 text-[11px] font-bold tracking-widest uppercase shrink-0 w-[52px]">Hazard</span>
+          <HazardSelector value={hazard} onChange={setHazard} />
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-brand-muted/70 text-[11px] font-bold tracking-widest uppercase shrink-0 w-[52px]">Lie</span>
+          <LieSelector value={lie} onChange={setLie} />
         </div>
       </section>
 

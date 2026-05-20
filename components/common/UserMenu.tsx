@@ -3,8 +3,8 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/lib/auth';
-import { LogOut, User, ChevronDown, Cloud, CloudOff } from 'lucide-react';
-import Image from 'next/image';
+import { LogOut, User, Cloud } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Props {
   syncing?: boolean;
@@ -20,62 +20,55 @@ export default function UserMenu({ syncing }: Props) {
   const rect = btnRef.current?.getBoundingClientRect();
 
   return (
-    <div className="relative">
+    <>
       <button
         ref={btnRef}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl
-                   bg-brand-dark/50 border border-brand-muted/15
-                   text-brand-muted hover:text-brand-cream
-                   transition-colors text-xs font-bold tracking-wide"
+        className={cn(
+          'flex-1 relative flex flex-col items-center justify-center gap-1 py-3.5',
+          'transition-colors duration-200',
+          open ? 'text-brand-neon' : 'text-brand-muted hover:text-brand-cream/70'
+        )}
       >
-        {user.photoURL ? (
-          <Image
-            src={user.photoURL}
-            alt="avatar"
-            width={20}
-            height={20}
-            className="rounded-full"
-          />
-        ) : (
-          <User size={14} />
+        {open && (
+          <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-brand-neon rounded-b-full shadow-[0_0_8px_rgba(225,255,0,0.8)]" />
         )}
-        <span className="max-w-[90px] truncate hidden sm:block">
-          {user.displayName ?? user.email ?? 'Account'}
+        <User
+          size={19}
+          strokeWidth={open ? 2.5 : 1.7}
+          className="transition-transform duration-200"
+          style={{ transform: open ? 'scale(1.08)' : 'scale(1)' }}
+        />
+        <span className={cn(
+          'text-[10px] tracking-wider transition-all duration-200',
+          open ? 'font-bold' : 'font-medium'
+        )}>
+          USER
         </span>
-        {syncing ? (
-          <Cloud size={12} className="text-brand-neon animate-pulse" />
-        ) : (
-          <CloudOff size={12} className="text-brand-muted/40" />
-        )}
-        <ChevronDown size={12} />
       </button>
 
       {open && createPortal(
         <>
-          {/* Backdrop */}
-          <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />
-          {/* Menu */}
+          <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
           <div
-            className="fixed z-[200] w-52 bg-brand-dark border border-brand-muted/15 rounded-2xl shadow-2xl overflow-hidden animate-scale-in"
+            className="fixed z-[9999] w-52 bg-brand-dark border border-brand-muted/15 rounded-2xl shadow-2xl overflow-hidden animate-scale-in"
             style={{
-              top: rect ? rect.bottom + 8 : 0,
+              bottom: rect ? window.innerHeight - rect.top + 8 : 0,
               right: rect ? window.innerWidth - rect.right : 0,
             }}
           >
-            {/* User info */}
             <div className="px-4 py-3 border-b border-brand-muted/10">
               <p className="text-brand-cream font-bold text-sm truncate">
                 {user.displayName ?? 'User'}
               </p>
               <p className="text-brand-muted text-xs truncate mt-0.5">{user.email}</p>
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <Cloud size={11} className="text-brand-neon" />
-                <span className="text-[10px] text-brand-muted/60 font-medium">Synced to Firestore</span>
-              </div>
+              {syncing && (
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <Cloud size={11} className="text-brand-neon" />
+                  <span className="text-[10px] text-brand-muted/60 font-medium">Synced</span>
+                </div>
+              )}
             </div>
-
-            {/* Sign out */}
             <button
               onClick={() => { setOpen(false); signOut(); }}
               className="w-full flex items-center gap-3 px-4 py-3
@@ -89,6 +82,6 @@ export default function UserMenu({ syncing }: Props) {
         </>,
         document.body
       )}
-    </div>
+    </>
   );
 }
