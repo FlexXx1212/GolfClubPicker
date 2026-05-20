@@ -44,10 +44,10 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
 
   return (
     /* Overlay */
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-4">
       <div className="absolute inset-0 bg-brand-black/80 backdrop-blur-sm" onClick={onCancel} />
 
-      <div className="relative w-full max-w-md bg-brand-dark border border-brand-muted/20 rounded-2xl p-5 space-y-5 shadow-2xl">
+      <div className="relative w-full max-w-md bg-brand-dark border border-brand-muted/20 rounded-2xl p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-brand-cream font-bold text-lg">
@@ -104,11 +104,11 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
               min={10}
               max={350}
               onChange={(e) => handleCarryChange(Number(e.target.value))}
-              className="w-28 bg-brand-black/50 border border-brand-muted/20 rounded-xl px-4 py-3
-                         text-brand-cream text-center text-lg font-bold
+              className="w-24 bg-brand-black/50 border border-brand-muted/20 rounded-xl px-3 py-2
+                         text-brand-cream text-center text-base font-bold
                          focus:outline-none focus:border-brand-neon/50 transition-colors"
             />
-            <span className="text-brand-muted font-medium">meters</span>
+            <span className="text-brand-muted font-medium text-sm">meters</span>
           </div>
           <input
             type="range"
@@ -117,7 +117,7 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
             step={1}
             value={carry}
             onChange={(e) => handleCarryChange(Number(e.target.value))}
-            className="w-full mt-3 accent-brand-neon"
+            className="w-full mt-2 accent-brand-neon"
           />
         </div>
 
@@ -133,11 +133,11 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
               min={carry}
               max={400}
               onChange={(e) => setTotalCustom(Number(e.target.value))}
-              className="w-28 bg-brand-black/50 border border-brand-muted/20 rounded-xl px-4 py-3
-                         text-brand-cream text-center text-lg font-bold
+              className="w-24 bg-brand-black/50 border border-brand-muted/20 rounded-xl px-3 py-2
+                         text-brand-cream text-center text-base font-bold
                          focus:outline-none focus:border-brand-neon/50 transition-colors"
             />
-            <span className="text-brand-muted font-medium">meters</span>
+            <span className="text-brand-muted font-medium text-sm">meters</span>
             {totalCustom !== null && (
               <button
                 type="button"
@@ -155,11 +155,8 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
             step={1}
             value={effectiveTotal}
             onChange={(e) => setTotalCustom(Number(e.target.value))}
-            className="w-full mt-3 accent-brand-neon"
+            className="w-full mt-2 accent-brand-neon"
           />
-          <p className="text-[11px] text-brand-muted/60 mt-1.5">
-            {totalCustom !== null ? 'Custom value' : 'Auto-calculated from carry + min. rollout'}
-          </p>
         </div>
 
         {/* Delete (only in edit mode) */}

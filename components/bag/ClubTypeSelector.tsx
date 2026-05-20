@@ -64,13 +64,6 @@ export default function ClubTypeSelector({ selectedCategory, selectedName, onSel
             </button>
           );
         })}
-        {/* Custom / clear */}
-        <button
-          onClick={() => onSelect(activeCategory, '')}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-dashed border-brand-muted/30 text-brand-muted/60 hover:border-brand-muted/60 hover:text-brand-muted transition-all duration-150"
-        >
-          Custom…
-        </button>
       </div>
     </div>
   );
