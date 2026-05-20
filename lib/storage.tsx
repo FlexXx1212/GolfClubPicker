@@ -134,9 +134,17 @@ export function BagProvider({ children }: { children: ReactNode }) {
     if (!loaded || bag.clubs.length === 0) return;
 
     if (user) {
+      // Sanitize: Firestore rejects undefined values
+      const sanitized: Bag = {
+        clubs: bag.clubs.map(({ id, name, category, carry, total }) => {
+          const c: Club = { id, name, category, carry };
+          if (total != null) c.total = total;
+          return c;
+        }),
+      };
       // Debounced Firestore write
       const timer = setTimeout(() => {
-        setDoc(bagDocRef(user.uid), bag);
+        setDoc(bagDocRef(user.uid), sanitized);
       }, 500);
       return () => clearTimeout(timer);
     } else {

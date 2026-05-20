@@ -37,12 +37,9 @@ export default function ClubForm({ initial, onSave, onCancel, onDelete }: Props)
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed || carry <= 0) return;
-    onSave({
-      name: trimmed,
-      category,
-      carry,
-      total: totalCustom ?? undefined,
-    });
+    const club: Omit<Club, 'id'> = { name: trimmed, category, carry };
+    if (totalCustom !== null) club.total = totalCustom;
+    onSave(club);
   }
 
   return (
