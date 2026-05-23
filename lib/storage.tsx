@@ -154,10 +154,13 @@ export function BagProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Wrapper that dispatches and then persists the resulting state
+  // Wrapper that dispatches and then persists the resulting state.
+  // bagRef is updated synchronously so rapid sequential calls (e.g. import loop)
+  // each see the result of the previous call.
   function addClub(club: Omit<Club, 'id'>) {
     const newClub = { ...club, id: uuidv4() };
     const updated: Bag = { clubs: [...bagRef.current.clubs, newClub] };
+    bagRef.current = updated;
     dispatch({ type: 'LOAD_BAG', bag: updated });
     persistBag(updated);
   }
@@ -166,6 +169,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     const updated: Bag = {
       clubs: bagRef.current.clubs.map((c) => c.id === club.id ? club : c),
     };
+    bagRef.current = updated;
     dispatch({ type: 'LOAD_BAG', bag: updated });
     persistBag(updated);
   }
@@ -174,6 +178,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     const updated: Bag = {
       clubs: bagRef.current.clubs.filter((c) => c.id !== id),
     };
+    bagRef.current = updated;
     dispatch({ type: 'LOAD_BAG', bag: updated });
     persistBag(updated);
   }
