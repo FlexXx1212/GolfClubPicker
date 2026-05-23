@@ -5,6 +5,7 @@ import {
   useContext,
   useReducer,
   useEffect,
+  useRef,
   ReactNode,
 } from 'react';
 import {
@@ -90,14 +91,31 @@ function saveLocalBag(bag: Bag) {
   localStorage.setItem(LOCAL_KEY, JSON.stringify(bag));
 }
 
+/** Strip undefined/null fields that Firestore rejects */
+function sanitizeBag(bag: Bag): Bag {
+  return {
+    clubs: bag.clubs.map(({ id, name, category, carry, total }) => {
+      const c: Club = { id, name, category, carry };
+      if (total != null) c.total = total;
+      return c;
+    }),
+  };
+}
+
 // ─── Provider ───────────────────────────────────────────────────────────────
 
 export function BagProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [bag,     dispatch]  = useReducer(bagReducer, { clubs: [] });
+  const [bag, dispatch] = useReducer(bagReducer, { clubs: [] });
   const [syncing, setSyncing] = useReducer((_prev: boolean, v: boolean) => v, false);
-  // Track whether we've loaded data (to avoid overwriting on first render)
-  const [loaded,  setLoaded]  = useReducer((_prev: boolean, v: boolean) => v, false);
+
+  // Track the current bag in a ref so persist functions always have latest
+  const bagRef = useRef(bag);
+  bagRef.current = bag;
+
+  // Track the user in a ref for the same reason
+  const userRef = useRef(user);
+  userRef.current = user;
 
   // ── Auth change: subscribe to Firestore or fall back to localStorage ────
   useEffect(() => {
@@ -110,56 +128,64 @@ export function BagProvider({ children }: { children: ReactNode }) {
         } else {
           // First login: push local bag to Firestore
           const local = getLocalBag();
-          setDoc(ref, local);
+          setDoc(ref, sanitizeBag(local));
           dispatch({ type: 'LOAD_BAG', bag: local });
         }
         setSyncing(false);
-        setLoaded(true);
       }, () => {
         // Firestore error fallback → localStorage
         dispatch({ type: 'LOAD_BAG', bag: getLocalBag() });
         setSyncing(false);
-        setLoaded(true);
       });
       return unsubscribe;
     } else {
       // Not signed in → use localStorage
       dispatch({ type: 'LOAD_BAG', bag: getLocalBag() });
-      setLoaded(true);
     }
   }, [user]);
 
-  // ── Persist bag changes ────────────────────────────────────────────────
-  useEffect(() => {
-    if (!loaded || bag.clubs.length === 0) return;
-
-    if (user) {
-      // Sanitize: Firestore rejects undefined values
-      const sanitized: Bag = {
-        clubs: bag.clubs.map(({ id, name, category, carry, total }) => {
-          const c: Club = { id, name, category, carry };
-          if (total != null) c.total = total;
-          return c;
-        }),
-      };
-      // Debounced Firestore write
-      const timer = setTimeout(() => {
-        setDoc(bagDocRef(user.uid), sanitized);
-      }, 500);
-      return () => clearTimeout(timer);
+  // ── Imperative persist: only called on explicit user mutations ──────────
+  function persistBag(updatedBag: Bag) {
+    const currentUser = userRef.current;
+    if (currentUser) {
+      setDoc(bagDocRef(currentUser.uid), sanitizeBag(updatedBag));
     } else {
-      saveLocalBag(bag);
+      saveLocalBag(updatedBag);
     }
-  }, [bag, user, loaded]);
+  }
+
+  // Wrapper that dispatches and then persists the resulting state
+  function addClub(club: Omit<Club, 'id'>) {
+    const newClub = { ...club, id: uuidv4() };
+    const updated: Bag = { clubs: [...bagRef.current.clubs, newClub] };
+    dispatch({ type: 'LOAD_BAG', bag: updated });
+    persistBag(updated);
+  }
+
+  function updateClub(club: Club) {
+    const updated: Bag = {
+      clubs: bagRef.current.clubs.map((c) => c.id === club.id ? club : c),
+    };
+    dispatch({ type: 'LOAD_BAG', bag: updated });
+    persistBag(updated);
+  }
+
+  function removeClub(id: string) {
+    const updated: Bag = {
+      clubs: bagRef.current.clubs.filter((c) => c.id !== id),
+    };
+    dispatch({ type: 'LOAD_BAG', bag: updated });
+    persistBag(updated);
+  }
 
   return (
     <BagContext.Provider
       value={{
         bag,
         syncing: syncing as unknown as boolean,
-        addClub:    (club) => dispatch({ type: 'ADD_CLUB',    club }),
-        updateClub: (club) => dispatch({ type: 'UPDATE_CLUB', club }),
-        removeClub: (id)   => dispatch({ type: 'REMOVE_CLUB', id }),
+        addClub,
+        updateClub,
+        removeClub,
       }}
     >
       {children}
