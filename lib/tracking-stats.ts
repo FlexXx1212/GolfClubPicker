@@ -70,7 +70,7 @@ export function computeStats(shots: TrackedShot[]): TrackingStats {
 }
 
 /** Number of most-recent shots used for the rolling club average. */
-export const ROLLING_AVERAGE_WINDOW = 5;
+export const ROLLING_AVERAGE_WINDOW = 10;
 
 /**
  * Computes stats using only the N most recent shots (by timestamp),
