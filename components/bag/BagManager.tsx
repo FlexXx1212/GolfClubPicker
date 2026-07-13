@@ -6,12 +6,14 @@ import { Club } from '@/lib/types';
 import { CATEGORY_ORDER, CATEGORY_LABELS } from '@/lib/defaults';
 import ClubCard from './ClubCard';
 import ClubForm from './ClubForm';
+import ClubHistoryModal from './ClubHistoryModal';
 import EmptyState from '@/components/common/EmptyState';
 import { Plus, Briefcase } from 'lucide-react';
 
 export default function BagManager() {
   const { bag, addClub, updateClub, removeClub } = useBag();
   const [editingClub, setEditingClub] = useState<Club | null>(null);
+  const [historyClub, setHistoryClub] = useState<Club | null>(null);
   const [showAddForm, setShowAddForm]  = useState(false);
 
   const grouped = CATEGORY_ORDER.map((cat) => ({
@@ -61,11 +63,12 @@ export default function BagManager() {
               </p>
               <div className="space-y-2">
                 {clubs.map((club) => (
-                  <ClubCard
-                    key={club.id}
-                    club={club}
-                    onEdit={() => setEditingClub(club)}
-                  />
+                    <ClubCard
+                      key={club.id}
+                      club={club}
+                      onEdit={() => setEditingClub(club)}
+                      onHistory={() => setHistoryClub(club)}
+                    />
                 ))}
               </div>
             </div>
@@ -97,6 +100,14 @@ export default function BagManager() {
             removeClub(editingClub.id);
             setEditingClub(null);
           }}
+        />
+      )}
+
+      {/* Club history */}
+      {historyClub && (
+        <ClubHistoryModal
+          club={historyClub}
+          onClose={() => setHistoryClub(null)}
         />
       )}
     </div>

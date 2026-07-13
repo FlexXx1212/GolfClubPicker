@@ -1,16 +1,17 @@
 import { Club } from '@/lib/types';
 import { getEffectiveTotal } from '@/lib/rollout';
 import { cn } from '@/lib/utils';
-import { Pencil, Activity } from 'lucide-react';
+import { Pencil, Activity, History } from 'lucide-react';
 import Link from 'next/link';
 import ClubIcon from '@/components/common/ClubIcon';
 
 interface Props {
   club: Club;
   onEdit: () => void;
+  onHistory: () => void;
 }
 
-export default function ClubCard({ club, onEdit }: Props) {
+export default function ClubCard({ club, onEdit, onHistory }: Props) {
   const effective = getEffectiveTotal(club);
 
   return (
@@ -46,6 +47,13 @@ export default function ClubCard({ club, onEdit }: Props) {
         >
           <Activity size={15} />
         </Link>
+        <button
+          onClick={onHistory}
+          className="p-2 rounded-lg text-brand-muted hover:text-brand-neon hover:bg-brand-neon/10 transition-colors"
+          aria-label={`View shot history for ${club.name}`}
+        >
+          <History size={15} />
+        </button>
         <button
           onClick={onEdit}
           className="p-2 rounded-lg text-brand-muted hover:text-brand-cream hover:bg-brand-muted/10 transition-colors"
