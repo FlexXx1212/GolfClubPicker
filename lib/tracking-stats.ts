@@ -68,3 +68,16 @@ export function computeStats(shots: TrackedShot[]): TrackingStats {
     validCount: valid.length,
   };
 }
+
+/** Number of most-recent shots used for the rolling club average. */
+export const ROLLING_AVERAGE_WINDOW = 5;
+
+/**
+ * Computes stats using only the N most recent shots (by timestamp),
+ * excluding outliers within that window. Used to keep a club's carry/total
+ * continuously up to date as new shots come in.
+ */
+export function computeStatsLastN(shots: TrackedShot[], n: number = ROLLING_AVERAGE_WINDOW): TrackingStats {
+  const recent = [...shots].sort((a, b) => b.timestamp - a.timestamp).slice(0, n);
+  return computeStats(recent);
+}

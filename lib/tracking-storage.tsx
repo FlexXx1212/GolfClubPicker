@@ -11,10 +11,11 @@ import {
 } from 'react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { TrackedShot, TrackingSession } from './types';
-import { getSessionDate } from './tracking-stats';
+import { getSessionDate, computeStatsLastN } from './tracking-stats';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from './firebase';
 import { useAuth } from './auth';
+import { useBag } from './storage';
 
 const LOCAL_KEY = 'golf_club_picker_tracking_local';
 
@@ -91,6 +92,7 @@ function emptySession(): TrackingSession {
 
 export function TrackingProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { bag, updateClub } = useBag();
   const [state, setState] = useState<TrackingState>({
     session: emptySession(),
     historyByClub: {},
@@ -99,6 +101,10 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
   stateRef.current = state;
   const userRef = useRef(user);
   userRef.current = user;
+  const bagRef = useRef(bag);
+  bagRef.current = bag;
+  const updateClubRef = useRef(updateClub);
+  updateClubRef.current = updateClub;
 
   function persistHistory(historyByClub: Record<string, TrackedShot[]>) {
     const sanitized = sanitizeHistory(historyByClub);
@@ -107,6 +113,18 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
       setDoc(trackingDocRef(currentUser.uid), { historyByClub: sanitized });
     } else {
       saveLocalStore({ historyByClub: sanitized });
+    }
+  }
+
+  // Recomputes the club's carry/total from its most recent shots and
+  // persists it via BagProvider — keeps the club distance continuously
+  // up to date without requiring a manual "Save" action.
+  function applyRollingAverage(clubId: string, clubShots: TrackedShot[]) {
+    const club = bagRef.current.clubs.find((c) => c.id === clubId);
+    if (!club) return;
+    const stats = computeStatsLastN(clubShots);
+    if (stats.validCount >= 1) {
+      updateClubRef.current({ ...club, carry: stats.medianCarry, total: stats.medianTotal });
     }
   }
 
@@ -165,9 +183,10 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
       timestamp: Date.now(),
     };
     const currentClubShots = stateRef.current.historyByClub[clubId] ?? [];
+    const nextClubShots = [...currentClubShots, shot];
     const nextHistory = {
       ...stateRef.current.historyByClub,
-      [clubId]: [...currentClubShots, shot],
+      [clubId]: nextClubShots,
     };
     const updated: TrackingState = {
       session: { ...stateRef.current.session, shots: [...stateRef.current.session.shots, shot] },
@@ -176,6 +195,7 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     stateRef.current = updated;
     setState(updated);
     persistHistory(nextHistory);
+    applyRollingAverage(clubId, nextClubShots);
   }, []);
 
   const removeShot = useCallback((shotId: string) => {
@@ -195,6 +215,7 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     stateRef.current = updated;
     setState(updated);
     persistHistory(nextHistory);
+    applyRollingAverage(clubId, nextClubShots);
   }, []);
 
   const getShotsForClub = useCallback((clubId: string) => {
@@ -211,9 +232,10 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
       timestamp: base + i,
     }));
     const currentClubShots = stateRef.current.historyByClub[clubId] ?? [];
+    const nextClubShots = [...currentClubShots, ...imported];
     const nextHistory = {
       ...stateRef.current.historyByClub,
-      [clubId]: [...currentClubShots, ...imported],
+      [clubId]: nextClubShots,
     };
     const updated: TrackingState = {
       ...stateRef.current,
@@ -222,6 +244,7 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     stateRef.current = updated;
     setState(updated);
     persistHistory(nextHistory);
+    applyRollingAverage(clubId, nextClubShots);
   }, []);
 
   const removeShotFromClub = useCallback((clubId: string, shotId: string) => {
@@ -243,6 +266,7 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     stateRef.current = updated;
     setState(updated);
     persistHistory(nextHistory);
+    applyRollingAverage(clubId, nextClubShots);
   }, []);
 
   const clearShots = useCallback(() => {
