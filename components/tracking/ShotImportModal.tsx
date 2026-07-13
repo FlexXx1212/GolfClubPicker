@@ -11,6 +11,8 @@ import {
   ImportGroup,
   ShotScopeExport,
 } from '@/lib/shotscope-import';
+import { computeStatsLastN } from '@/lib/tracking-stats';
+import { TrackedShot } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -20,7 +22,7 @@ interface Props {
 
 export default function ShotImportModal({ onClose, onImported }: Props) {
   const { bag } = useBag();
-  const { addImportedShots } = useTracking();
+  const { addImportedShots, getShotsForClub } = useTracking();
   const [groups, setGroups] = useState<ImportGroup[] | null>(null);
   const [date, setDate] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -62,6 +64,20 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
     const updated = [...groups];
     updated[index] = { ...updated[index], mappedClubId: clubId };
     setGroups(updated);
+  };
+
+  /** Predicted new carry for a club if this group's shots were imported for it. */
+  const previewCarry = (clubId: string, group: ImportGroup): number => {
+    const existing = getShotsForClub(clubId);
+    const now = Date.now();
+    const incoming: TrackedShot[] = group.shots.map((s, idx) => ({
+      id: `preview-${idx}`,
+      carry: s.carry,
+      total: s.total,
+      timestamp: now + idx,
+    }));
+    const stats = computeStatsLastN([...existing, ...incoming]);
+    return stats.medianCarry;
   };
 
   const handleImport = async () => {
@@ -173,11 +189,18 @@ export default function ShotImportModal({ onClose, onImported }: Props) {
                     <option value="">— Skip —</option>
                     {bag.clubs
                       .sort((a, b) => b.carry - a.carry)
-                      .map((club) => (
-                        <option key={club.id} value={club.id}>
-                          {club.name} ({club.carry}m)
-                        </option>
-                      ))}
+                      .map((club) => {
+                        const isMapped = group.mappedClubId === club.id;
+                        const newCarry = isMapped ? previewCarry(club.id, group) : null;
+                        const label = newCarry !== null && newCarry !== club.carry
+                          ? `${club.name} (${club.carry} \u2192 ${newCarry}m)`
+                          : `${club.name} (${club.carry}m)`;
+                        return (
+                          <option key={club.id} value={club.id}>
+                            {label}
+                          </option>
+                        );
+                      })}
                   </select>
 
                   {/* Match indicator */}
